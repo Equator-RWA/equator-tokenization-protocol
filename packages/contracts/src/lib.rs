@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, Env};
+use soroban_sdk::{contract, contractimpl, symbol_short, Address, Env};
 
 #[contract]
 pub struct EquatorRegulatedAsset;
@@ -26,6 +26,6 @@ impl EquatorRegulatedAsset {
         // 3. Add a check here: assert!(is_authorized(&env, &to), "Receiver not authorized");
         
         // Mock transfer logic would go here.
-        env.events().publish(("transfer", &from, &to, amount));
+        env.events().publish((symbol_short!("transfer"), from, to), amount);
     }
 }
