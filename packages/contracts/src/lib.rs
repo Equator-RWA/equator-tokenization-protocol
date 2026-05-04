@@ -26,6 +26,6 @@ impl EquatorRegulatedAsset {
         // 3. Add a check here: assert!(is_authorized(&env, &to), "Receiver not authorized");
         
         // Mock transfer logic would go here.
-        env.logs().publish(("transfer", &from, &to, amount));
+        env.events().publish(("transfer", &from, &to, amount));
     }
 }
