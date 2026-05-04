@@ -1,0 +1,63 @@
+name: Equator Protocol CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    name: Build & Verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # --- NODE & NEXT.JS CACHING ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache Node Modules
+        uses: actions/cache@v4
+        id: node-cache
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+
+      - name: Install Node Dependencies
+        if: steps.node-cache.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Cache Next.js
+        uses: actions/cache@v4
+        with:
+          path: packages/admin-panel/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('packages/admin-panel/**') }}
+
+      # --- RUST & SOROBAN CACHING ---
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          profile: minimal
+          override: true
+
+      - name: Cache Rust Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/contracts/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('packages/contracts/Cargo.toml') }}
+
+      # --- TURBO EXECUTION ---
+      - name: Turbo Build
+        run: npm run build
